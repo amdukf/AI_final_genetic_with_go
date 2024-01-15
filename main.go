@@ -215,7 +215,7 @@ func (g *Genetic) onePointCrossover(parent1, parent2 *Chromosome) (*Chromosome, 
 // TwoPointCrossover performs two-point crossover on two parent chromosomes.
 func (g *Genetic) twoPointCrossover(parent1, parent2 *Chromosome) (*Chromosome, *Chromosome) {
 	ind1 := rand.Intn(g.chromosomeLength)
-	ind2 := rand.Intn(g.chromosomeLength-ind1) + ind1
+	ind2 := rand.Intn(g.chromosomeLength-ind1)
 
 	if ind2 < ind1 {
 		ind1, ind2 = ind2, ind1
@@ -224,10 +224,12 @@ func (g *Genetic) twoPointCrossover(parent1, parent2 *Chromosome) (*Chromosome, 
 	newChild1 := make([]int, g.chromosomeLength)
 	newChild2 := make([]int, g.chromosomeLength)
 
-	for i := ind1; i <= ind2; i++ {
-		newChild1[i] = parent1.gens[i]
-		newChild2[i] = parent2.gens[i]
-	}
+	copy(newChild1, parent1.gens)
+	copy(newChild1[ind1:ind2], parent2.gens[ind1:ind2])
+
+	copy(newChild2, parent2.gens)
+	copy(newChild2[ind1:ind2], parent1.gens[ind1:ind2])
+
 
 	return NewChromosome(newChild1), NewChromosome(newChild2)
 }
@@ -379,7 +381,7 @@ func main() {
 	populationSize := 10
 	perMutation := 0.1
 	maxiter := 300
-	crossoverType := OnePoint
+	crossoverType := Uniform
 
 	genetic := NewGenetic(chromosomeLength, uint32(populationSize), float32(perMutation), uint32(maxiter), crossoverType)
 
