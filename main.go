@@ -11,18 +11,18 @@ type Chromosome struct {
 	fitness          float32
 	fitnessRatio     float32
 	probabilityRange [2]float32
-	summation  float32
+	summation        float32
 }
 
 // Genetic represents the genetic algorithm.
 type Genetic struct {
 	chromosomeLength int
-	populationSize    uint32
+	populationSize   uint32
 	perMutation      float32
-	population        []*Chromosome
-	maxiter           uint32
-	crossoverType     CrossoverType
-	summation float32
+	population       []*Chromosome
+	maxiter          uint32
+	crossoverType    CrossoverType
+	summation        float32
 }
 
 // CrossoverType represents the type of crossover used in genetic algorithm.
@@ -70,10 +70,8 @@ func (c *Chromosome) Fitness() float32 {
 // FitnessRatio calculates and returns the fitness ratio of the chromosome.
 func (c *Chromosome) FitnessRatio() float32 {
 
-    return c.Fitness() / c.summation
+	return c.Fitness() / c.summation
 }
-
-
 
 // SetProbabilityRange sets the probability range for chromosome selection.
 func (c *Chromosome) SetProbabilityRange(rangeValue [2]float32) {
@@ -150,18 +148,17 @@ func (g *Genetic) randomChromosome() *Chromosome {
 
 // FitnessSummation calculates the sum of fitness values in the population.
 func (g *Genetic) fitnessSummation() float32 {
-    var sum float32
+	var sum float32
 	// calculating summation of all fitnesses for all population chromsomes
-    for _, chromosome := range g.population {
-        sum += chromosome.Fitness()
-    }
+	for _, chromosome := range g.population {
+		sum += chromosome.Fitness()
+	}
 
+	for _, chromosome := range g.population {
+		chromosome.summation = sum
+	}
 
-    for _, chromosome := range g.population {
-        chromosome.summation = sum
-    }
-
-    return sum
+	return sum
 }
 
 // InitProbabilityRange initializes the probability range for each chromosome.
@@ -177,22 +174,21 @@ func (g *Genetic) initProbabilityRange() {
 // ParentSelection selects parents based on fitness and probability range.
 func (g *Genetic) parentSelection() []*Chromosome {
 	g.summation = g.fitnessSummation()
-    g.initProbabilityRange() // Move this line here
+	g.initProbabilityRange() // Move this line here
 
-    newParents := make([]*Chromosome, 0)
-    for len(newParents) < int(g.populationSize) {
-        for _, chromo := range g.population {
-            randNo := rand.Float32()
-            if chromo.IsChosen(randNo) {
-                newParents = append(newParents, chromo)
-                break
-            }
-        }
-    }
+	newParents := make([]*Chromosome, 0)
+	for len(newParents) < int(g.populationSize) {
+		for _, chromo := range g.population {
+			randNo := rand.Float32()
+			if chromo.IsChosen(randNo) {
+				newParents = append(newParents, chromo)
+				break
+			}
+		}
+	}
 
-    return newParents
+	return newParents
 }
-
 
 // OnePointCrossover performs one-point crossover on two parent chromosomes.
 func (g *Genetic) onePointCrossover(parent1, parent2 *Chromosome) (*Chromosome, *Chromosome) {
@@ -203,7 +199,6 @@ func (g *Genetic) onePointCrossover(parent1, parent2 *Chromosome) (*Chromosome, 
 	// fmt.Printf("parent 2 gens (one point crossover) : %v\n", parent2.gens)
 	newChild1 := make([]int, g.chromosomeLength)
 	newChild2 := make([]int, g.chromosomeLength)
-
 
 	copy(newChild1, parent1.gens[:crossoverPoint])
 	copy(newChild1[crossoverPoint:], parent2.gens[crossoverPoint:])
@@ -279,10 +274,10 @@ func (g *Genetic) recombination(parents []*Chromosome) []*Chromosome {
 		// fmt.Printf("parent 1 gens (recombination) : %v\n", parents[i].gens)
 		// fmt.Printf("parent 2 gens (recombination) : %v\n", parents[i + 1].gens)
 		child1, child2 := g.crossover(parents[i], parents[i+1])
-		
+
 		// fmt.Printf("child 1 gens (recombination) : %v\n", child1.gens)
 		// fmt.Printf("child 2 gens (recombination) : %v\n", child2.gens)
-		
+
 		offsprings = append(offsprings, child1, child2)
 	}
 	return offsprings
@@ -293,9 +288,8 @@ func (g *Genetic) swapMutation(chromosome *Chromosome) *Chromosome {
 	newGens := make([]int, len(chromosome.gens))
 	copy(newGens, chromosome.gens)
 
-
 	if rand.Float32() <= g.perMutation {
-	
+
 		// fmt.Printf("gens before sw : %v\n", newGens)
 		i := rand.Intn(len(newGens))
 		j := rand.Intn(len(newGens))
@@ -304,7 +298,6 @@ func (g *Genetic) swapMutation(chromosome *Chromosome) *Chromosome {
 		// fmt.Printf("j : %v\n", j)
 		// fmt.Printf("gens after sw : %v\n", newGens)
 	}
-
 
 	return NewChromosome(newGens)
 }
@@ -332,70 +325,68 @@ func (g *Genetic) maximumFitness(population []*Chromosome) (int, float32) {
 
 // StartLoop runs the genetic algorithm loop.
 func (g *Genetic) startLoop() (*Chromosome, []float32) {
-    if g == nil {
-        panic("Genetic instance is nil.")
-    }
+	if g == nil {
+		panic("Genetic instance is nil.")
+	}
 
-    bestFitnesses := make([]float32, 0)
-    best := g.randomChromosome()
+	bestFitnesses := make([]float32, 0)
+	best := g.randomChromosome()
 
-    for i := uint32(1); i <= g.maxiter; i++ {
-        parents := g.parentSelection()
+	for i := uint32(1); i <= g.maxiter; i++ {
+		parents := g.parentSelection()
 
 		// for _, chr := range parents {
 		// 	fmt.Printf("Current selected parents : %v\n", chr.gens)
-			
+
 		// }
 
-		
-        offsprings := g.recombination(parents)
+		offsprings := g.recombination(parents)
 
 		// for _, chr := range offsprings {
 		// 	fmt.Printf("first offsprings (crossover) : %v\n", chr.gens)
-			
+
 		// }
 
-        offsprings = g.mutation(offsprings)
+		offsprings = g.mutation(offsprings)
 
 		// for _, chr := range offsprings {
 		// 	fmt.Printf("first offsprings (crossover) : %v\n", chr.gens)
-			
+
 		// }
 
-        g.population = offsprings
+		g.population = offsprings
 
-        // // Truncate the population to the original size
-        // g.population = g.population[:int(g.populationSize)]
+		// // Truncate the population to the original size
+		// g.population = g.population[:int(g.populationSize)]
 
-        // Update best chromosome
-        bestIndex, bestFitness := g.maximumFitness(g.population)
-        if bestFitness > best.Fitness() {
-            best = g.population[bestIndex]
-        }
+		// Update best chromosome
+		bestIndex, bestFitness := g.maximumFitness(g.population)
+		if bestFitness > best.Fitness() {
+			best = g.population[bestIndex]
+		}
 
-        // Store best fitness for analysis
-        bestFitnesses = append(bestFitnesses, bestFitness)
+		// Store best fitness for analysis
+		bestFitnesses = append(bestFitnesses, bestFitness)
 
-        // fmt.Printf("Iteration %d, Best Fitness: %v\n", i, bestFitness)
-    }
+		// fmt.Printf("Iteration %d, Best Fitness: %v\n", i, bestFitness)
+	}
 
-    return best, bestFitnesses
+	return best, bestFitnesses
 }
 
-
 func main() {
-    chromosomeLength := 10
-    populationSize := 10
-    perMutation := 0.1
-    maxiter := 300
-    crossoverType := OnePoint
+	chromosomeLength := 10
+	populationSize := 10
+	perMutation := 0.1
+	maxiter := 300
+	crossoverType := OnePoint
 
-    genetic := NewGenetic(chromosomeLength, uint32(populationSize), float32(perMutation), uint32(maxiter), crossoverType)
+	genetic := NewGenetic(chromosomeLength, uint32(populationSize), float32(perMutation), uint32(maxiter), crossoverType)
 
-    bestChromosome, bestFitnesses := genetic.startLoop()
+	bestChromosome, bestFitnesses := genetic.startLoop()
 
-    fmt.Printf("Best Chromosome: %v, intersects: %v\n", bestChromosome.gens, bestChromosome.Intersects())
-    bestChromosome.Print()
+	fmt.Printf("Best Chromosome: %v, intersects: %v\n", bestChromosome.gens, bestChromosome.Intersects())
+	bestChromosome.Print()
 
-    fmt.Printf("Best Fitnesses: %v\n", bestFitnesses)
+	fmt.Printf("Best Fitnesses: %v\n", bestFitnesses)
 }
